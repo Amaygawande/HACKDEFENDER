@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Phishing URL Detector</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/typed.js/2.0.12/typed.min.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: url("https://img.freepik.com/free-vector/security-background-with-padlock-circuits_23-2147633223.jpg?t=st=1739629560~exp=1739633160~hmac=a77d91bfda78a45061fda4d90cc6ffb5334fea0b936dde26a641cea68e023719&w=740")
+          no-repeat center center/cover;
+        color: white;
+        font-family: "Poppins", sans-serif;
+        text-align: center;
+        overflow: hidden;
+      }
+      .container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        backdrop-filter: blur(8px);
+        position: relative;
+      }
+      header h1 {
+        font-size: 2.5em;
+        text-shadow: 4px 4px 15px rgba(0, 255, 255, 0.7);
+      }
+      #dynamic-text {
+        font-size: 1.5em;
+        margin-bottom: 20px;
+        color: #00ffff;
+      }
+      .content {
+        background: rgba(0, 0, 0, 0.7);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0px 0px 20px rgba(0, 255, 255, 0.4);
+        animation: fadeIn 2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 80%;
+        max-width: 450px;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 5px;
+        font-size: 1rem;
+        text-align: center;
+      }
+      button {
+        margin-top: 15px;
+        padding: 12px 20px;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: bold;
+        background: #00ffff;
+        color: black;
+        cursor: pointer;
+        box-shadow: 0px 0px 10px rgba(0, 255, 255, 0.7);
+        transition: 0.3s;
+      }
+      button:hover {
+        background: #00cccc;
+        box-shadow: 0px 0px 15px rgba(0, 255, 255, 1);
+      }
+      .result {
+        margin-top: 15px;
+        font-size: 1.2rem;
+        font-weight: bold;
+      }
+      .safe {
+        color: green;
+      }
+      .warning {
+        color: orange;
+      }
+      .danger {
+        color: red;
+      }
+      .tool-box {
+        background: rgba(0, 0, 0, 0.6);
+        padding: 10px;
+        border-radius: 10px;
+        margin-top: 20px;
+        width: 80%;
+        max-width: 250px;
+        box-shadow: 0px 0px 15px rgba(0, 255, 255, 0.3);
+        transition: transform 0.3s;
+      }
+      .tool-box:hover {
+        transform: scale(1.05);
+      }
+      .tool-box a {
+        text-decoration: none;
+        color: #00ffff;
+        font-weight: bold;
+      }
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .cyber-overlay {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        background: rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(3px);
+      }
+    </style>
+  </head>
+  <body>
+    <div class="cyber-overlay"></div>
+    <div class="container">
+      <header>
+        <h1>Phishing URL Detector</h1>
+        <p id="dynamic-text"></p>
+      </header>
+      <div class="content">
+        <p>Enter a URL to check for phishing risks:</p>
+        <input type="text" id="urlInput" placeholder="Enter website URL" />
+        <button onclick="checkURL()">Check URL</button>
+        <p class="result" id="resultText"></p>
+        <div class="tool-box">
+          <a href="index.html">⬅️ Back to Home</a>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      var typed = new Typed("#dynamic-text", {
+        strings: [
+          "Stay Secure. Stay Vigilant.",
+          "Defend Against Cyber Threats.",
+          "Your Security, Our Priority.",
+        ],
+        typeSpeed: 50,
+        backSpeed: 30,
+        loop: true,
+      });
+
+      async function checkWithGoogleSafeBrowsing(url) {
+        const API_KEY = "YOUR_GOOGLE_API_KEY"; // Replace with your actual API Key
+        const API_URL = `https://safebrowsing.googleapis.com/v4/threatMatches:find?key=${API_KEY}`;
+
+        const requestBody = {
+          client: { clientId: "phishing-checker", clientVersion: "1.0" },
+          threatInfo: {
+            threatTypes: ["MALWARE", "SOCIAL_ENGINEERING", "UNWANTED_SOFTWARE"],
+            platformTypes: ["ANY_PLATFORM"],
+            threatEntryTypes: ["URL"],
+            threatEntries: [{ url: url }],
+          },
+        };
+
+        let response = await fetch(API_URL, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        });
+
+        let data = await response.json();
+        return data.matches ? "⚠️ Unsafe URL Detected!" : "✅ Safe URL";
+      }
+
+      async function checkURL() {
+        let url = document.getElementById("urlInput").value.trim();
+        let resultText = document.getElementById("resultText");
+
+        if (!url) {
+          resultText.textContent = "Please enter a URL!";
+          resultText.className = "result warning";
+          return;
+        }
+
+        let googleSafeBrowsingResult = await checkWithGoogleSafeBrowsing(url);
+
+        if (googleSafeBrowsingResult.includes("Unsafe")) {
+          resultText.textContent = "🚨 High Risk! Avoid this URL.";
+          resultText.className = "result danger";
+        } else {
+          resultText.textContent = "✅ This URL appears safe.";
+          resultText.className = "result safe";
+        }
+      }
+    </script>
+  </body>
+</html>
